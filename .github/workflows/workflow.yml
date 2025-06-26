@@ -42,6 +42,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
+          labels: |
+            maintainer=tionichm
+            org.opencontainers.image.title="bash-script-init-container"
+            org.opencontainers.image.description="A container image that provides a minimal environment that can be used to run bash scripts with common utilities pre-installed."
           tags: |
             type=sha,format=long
             type=raw,value=latest

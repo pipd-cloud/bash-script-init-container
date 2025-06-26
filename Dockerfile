@@ -1,10 +1,5 @@
 FROM alpine:latest
 
-# Set Dockerfile metadata
-LABEL maintainer="tionichm@duck.com"
-LABEL license="MIT"
-LABEL description="Alpine Linux with useful tools for init containers"
-
 # Set the default packages to install
 ARG PACKAGES="curl wget jq aws-cli"
 ENV PACKAGES=${PACKAGES}
