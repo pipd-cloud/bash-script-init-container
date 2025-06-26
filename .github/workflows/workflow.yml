@@ -83,13 +83,13 @@ jobs:
           output: "${{ github.workspace }}/dependency-results.sbom.json"
 
       # Upload the Trivy vulnerability report as a GitHub artifact
-      - name: Upload trivy report as a Github artifact
+      - name: Upload trivy vulnerability report as a Github artifact
         uses: github/codeql-action/upload-sarif@v3
         with:
-          name: ${{ github.workspace }}/dependency-results.sarif
+          sarif_file: ${{ github.workspace }}/dependency-results.sarif
 
       # Upload the Trivy SBOM report as a GitHub artifact
-      - name: Upload trivy report as a Github artifact
+      - name: Upload trivy SBOM report as a Github artifact
         uses: actions/upload-artifact@v4
         with:
           name: trivy-sbom-report
