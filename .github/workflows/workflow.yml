@@ -16,7 +16,20 @@ permissions:
 env:
   PACKAGES: "wget curl jq aws-cli"
 jobs:
+  # Invalidate the cache if the workflow is triggered by the schedule event
+  invalidate:
+    name: Invalidate Cache
+    if: ${{ github.event_name == 'schedule'}}
+    runs-on: ubuntu-latest
+    steps:
+      # Clear the Github Actions cache
+      - name: Invalidate cache
+        shell: bash
+        run: |
+          gh cache delete --all
+
   build:
+    needs: invalidate
     name: Build and Push Image
     runs-on: ubuntu-latest
     outputs:
