@@ -58,7 +58,7 @@ jobs:
         with:
           scanners: vuln
           severity: CRITICAL,HIGH,MEDIUM
-          image-ref: ${{ steps.meta.outputs.tags }}
+          image-ref: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
           format: github
           scan-type: image
           github-pat: ${{ secrets.GITHUB_TOKEN }}
