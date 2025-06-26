@@ -8,10 +8,17 @@ on:
       - main
   workflow_dispatch:
 permissions:
-  contents: write
+  # Used to clear the cache
+  actions: write
+  # Used to read the content of the repository
+  contents: read
+  # Used to read and write to the GitHub Container Registry
   packages: write
+  # Used to perform authentication using Docker
   id-token: write
+  # Used to write the attestations
   attestations: write
+  # Used to write vulnerability reports and SBOMs
   security-events: write
 env:
   PACKAGES: "wget curl jq aws-cli"
