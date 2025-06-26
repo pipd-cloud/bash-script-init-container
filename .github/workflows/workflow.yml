@@ -84,6 +84,7 @@ jobs:
   scan:
     name: Generate Vulnerability Report
     needs: build
+    if: ${{ always() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       # Generate vulnerability report using Trivy
@@ -106,6 +107,7 @@ jobs:
     name: Generate SBOM
     needs: build
     runs-on: ubuntu-latest
+    if: ${{ always() && needs.build.result == 'success' }}
     steps:
       # Generate SBOM using trivy
       - name: Generate SBOM for the Docker image
@@ -130,6 +132,7 @@ jobs:
     name: Generate Attestation
     needs: build
     runs-on: ubuntu-latest
+    if: ${{ always() && needs.build.result == 'success' }}
     steps:
       # Log into GitHub Container Registry
       - name: Log in to GitHub Container Registry
