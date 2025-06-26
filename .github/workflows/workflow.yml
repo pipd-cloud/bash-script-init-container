@@ -24,6 +24,10 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      # Check out the repository
+      - name: Checkout Git repository
+        uses: actions/checkout@v4
+
       # Clear the Github Actions cache
       - name: Invalidate cache
         shell: bash
