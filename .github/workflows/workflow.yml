@@ -76,7 +76,7 @@ jobs:
           output: "${{ github.workspace }}/trivy-results.sarif"
 
       # Generate SBOM using trivy
-      - name: Scan the Docker image with Trivy
+      - name: Generate SBOM for the Docker image
         id: image-sbom
         uses: aquasecurity/trivy-action@master
         with:
