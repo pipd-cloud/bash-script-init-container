@@ -30,6 +30,7 @@ jobs:
 
   build:
     needs: invalidate
+    if: always()
     name: Build and Push Image
     runs-on: ubuntu-latest
     outputs:
