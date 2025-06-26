@@ -71,7 +71,7 @@ jobs:
 
       # Generate SBOM using trivy
       - name: Scan the Docker image with Trivy
-        id: scan-image
+        id: image-sbom
         uses: aquasecurity/trivy-action@master
         with:
           scanners: vuln
