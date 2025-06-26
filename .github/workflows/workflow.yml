@@ -56,7 +56,20 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Scans the built Docker image for vulnerabilities using Trivy
+      # Generate vulnerability report using Trivy
+      - name: Scan the Docker image with Trivy
+        id: scan-image
+        uses: aquasecurity/trivy-action@master
+        with:
+          scanners: vuln
+          severity: CRITICAL,HIGH,MEDIUM
+          image-ref: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
+          format: sarif
+          scan-type: image
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
+          output: "${{ github.workspace }}/dependency-results.sarif"
+
+      # Generate SBOM using trivy
       - name: Scan the Docker image with Trivy
         id: scan-image
         uses: aquasecurity/trivy-action@master
@@ -69,7 +82,13 @@ jobs:
           github-pat: ${{ secrets.GITHUB_TOKEN }}
           output: "${{ github.workspace }}/dependency-results.sbom.json"
 
-      # Uploads the Trivy report as a GitHub artifact
+      # Upload the Trivy vulnerability report as a GitHub artifact
+      - name: Upload trivy report as a Github artifact
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          name: ${{ github.workspace }}/dependency-results.sarif
+
+      # Upload the Trivy SBOM report as a GitHub artifact
       - name: Upload trivy report as a Github artifact
         uses: actions/upload-artifact@v4
         with:
