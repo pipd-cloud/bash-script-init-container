@@ -50,6 +50,8 @@ jobs:
             PACKAGES=${{ env.PACKAGES }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${ steps.meta.outputs.labels }
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       # Scans the built Docker image for vulnerabilities using Trivy
       - name: Scan the Docker image with Trivy
