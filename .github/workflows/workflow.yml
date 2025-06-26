@@ -1,4 +1,4 @@
-name: Build and Scan Docker Image
+name: CI
 on:
   schedule:
     # Run every week on Sunday at 00:00 UTC
@@ -16,8 +16,11 @@ permissions:
 env:
   PACKAGES: "wget curl jq aws-cli"
 jobs:
-  update:
+  build:
+    name: Build and Push Image
     runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.build-push-image.outputs.digest }}
     steps:
       # Checks out the current repository
       - name: Checkout Git repository
@@ -62,7 +65,11 @@ jobs:
           labels: ${ steps.meta.outputs.labels }
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
+  scan:
+    name: Scan Image
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       # Generate vulnerability report using Trivy
       - name: Scan the Docker image with Trivy
         id: scan-image
@@ -74,7 +81,16 @@ jobs:
           format: sarif
           github-pat: ${{ secrets.GITHUB_TOKEN }}
           output: "${{ github.workspace }}/trivy-results.sarif"
-
+      # Upload the Trivy vulnerability report as a GitHub artifact
+      - name: Upload trivy vulnerability report as a Github artifact
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ github.workspace }}/trivy-results.sarif
+  sbom:
+    name: Generate SBOM
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       # Generate SBOM using trivy
       - name: Generate SBOM for the Docker image
         id: image-sbom
@@ -87,12 +103,6 @@ jobs:
           github-pat: ${{ secrets.GITHUB_TOKEN }}
           output: "${{ github.workspace }}/trivy-results.sbom.json"
 
-      # Upload the Trivy vulnerability report as a GitHub artifact
-      - name: Upload trivy vulnerability report as a Github artifact
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: ${{ github.workspace }}/trivy-results.sarif
-
       # Upload the Trivy SBOM report as a GitHub artifact
       - name: Upload trivy SBOM report as a Github artifact
         uses: actions/upload-artifact@v4
@@ -100,12 +110,16 @@ jobs:
           name: trivy-sbom-report
           path: "${{ github.workspace }}/trivy-results.sbom.json"
           retention-days: 30
-
+  attest:
+    name: Generate Attestation
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       # Generate attestation for the image and upload to the registry
       - name: Generate attestation for the image
         id: attest-image
         uses: actions/attest-build-provenance@v2
         with:
           subject-name: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
-          subject-digest: ${{ steps.build-push-image.outputs.digest }}
+          subject-digest: ${{ needs.build.outputs.digest }}
           push-to-registry: true
