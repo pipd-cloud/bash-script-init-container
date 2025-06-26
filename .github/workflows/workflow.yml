@@ -102,6 +102,6 @@ jobs:
         id: attest-image
         uses: actions/attest-build-provenance@v2
         with:
-          subject-name: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
+          subject-name: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
           subject-digest: ${{ steps.build-push-image.outputs.digest }}
           push-to-registry: true
