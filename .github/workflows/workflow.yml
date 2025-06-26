@@ -21,6 +21,8 @@ jobs:
     name: Invalidate Cache
     # if: ${{ github.event_name == 'schedule'}}
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       # Clear the Github Actions cache
       - name: Invalidate cache
