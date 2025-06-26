@@ -26,7 +26,7 @@ jobs:
   # Invalidate the cache if the workflow is triggered by the schedule event
   invalidate:
     name: Invalidate Cache
-    # if: ${{ github.event_name == 'schedule'}}
+    if: ${{ github.event_name == 'schedule'}}
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
