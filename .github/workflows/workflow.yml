@@ -1,4 +1,5 @@
 name: CI
+
 on:
   schedule:
     # Run every week on Sunday at 00:00 UTC
@@ -7,40 +8,36 @@ on:
     branches:
       - main
   workflow_dispatch:
+
 permissions:
-  # Used to clear the cache
-  actions: write
-  # Used to read the content of the repository
-  contents: read
-  # Used to read and write to the GitHub Container Registry
-  packages: write
-  # Used to perform authentication using Docker
-  id-token: write
-  # Used to write the attestations
-  attestations: write
-  # Used to write vulnerability reports and SBOMs
-  security-events: write
+  actions: write # Used to clear the cache
+  contents: read # Used to read the content of the repository
+  packages: write # Used to read and write to the GitHub Container Registry
+  id-token: write # Used to perform authentication using Docker
+  attestations: write # Used to write the attestations
+  security-events: write # Used to write vulnerability reports and SBOMs
+
 env:
-  PACKAGES: "wget curl jq aws-cli"
+  PACKAGES: ${{ var.PACKAGES }}
+
 jobs:
   # Invalidate the cache if the workflow is triggered by the schedule event
   invalidate:
     name: Invalidate Cache
-    if: ${{ github.event_name == 'schedule'}}
+    if: ${{ github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      # Check out the repository
       - name: Checkout Git repository
         uses: actions/checkout@v4
 
-      # Clear the Github Actions cache
       - name: Invalidate cache
         shell: bash
         run: |
           gh cache delete --all
 
+  # Build and push the Docker image
   build:
     needs: invalidate
     if: always()
@@ -49,11 +46,9 @@ jobs:
     outputs:
       digest: ${{ steps.build-push-image.outputs.digest }}
     steps:
-      # Checks out the current repository
       - name: Checkout Git repository
         uses: actions/checkout@v4
 
-      # Log into GitHub Container Registry
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -61,12 +56,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Set up Docker Buildx
       - name: Set up Docker Buildx
         id: install-buildx
         uses: docker/setup-buildx-action@v3
 
-      # Prepares Docker metadata for tagging and labeling
       - name: Prepare Docker Metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -80,7 +73,6 @@ jobs:
             type=sha,format=long
             type=raw,value=latest
 
-      # Build and push the Task Container Image
       - name: Build and push the Task Container Image
         id: build-push-image
         uses: docker/build-push-action@v6
@@ -89,16 +81,17 @@ jobs:
           args: |
             PACKAGES=${{ env.PACKAGES }}
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${ steps.meta.outputs.labels }
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # Generate vulnerability report for the image
   scan:
     name: Generate Vulnerability Report
     needs: build
     if: ${{ always() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      # Generate vulnerability report using Trivy
       - name: Scan the Docker image with Trivy
         id: scan-image
         uses: aquasecurity/trivy-action@master
@@ -109,18 +102,19 @@ jobs:
           format: sarif
           github-pat: ${{ secrets.GITHUB_TOKEN }}
           output: "${{ github.workspace }}/trivy-results.sarif"
-      # Upload the Trivy vulnerability report as a GitHub artifact
+
       - name: Upload trivy vulnerability report as a Github artifact
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ github.workspace }}/trivy-results.sarif
+
+  # Generate SBOM for the image
   sbom:
     name: Generate SBOM
     needs: build
     runs-on: ubuntu-latest
     if: ${{ always() && needs.build.result == 'success' }}
     steps:
-      # Generate SBOM using trivy
       - name: Generate SBOM for the Docker image
         id: image-sbom
         uses: aquasecurity/trivy-action@master
@@ -132,20 +126,20 @@ jobs:
           github-pat: ${{ secrets.GITHUB_TOKEN }}
           output: "${{ github.workspace }}/trivy-results.sbom.json"
 
-      # Upload the Trivy SBOM report as a GitHub artifact
       - name: Upload trivy SBOM report as a Github artifact
         uses: actions/upload-artifact@v4
         with:
           name: trivy-sbom-report
           path: "${{ github.workspace }}/trivy-results.sbom.json"
           retention-days: 30
+
+  # Generate attestation for the image
   attest:
     name: Generate Attestation
     needs: build
     runs-on: ubuntu-latest
     if: ${{ always() && needs.build.result == 'success' }}
     steps:
-      # Log into GitHub Container Registry
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -153,7 +147,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Generate attestation for the image and upload to the registry
       - name: Generate attestation for the image
         id: attest-image
         uses: actions/attest-build-provenance@v2
