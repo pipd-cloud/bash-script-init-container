@@ -79,7 +79,7 @@ jobs:
         with:
           push: true
           args: |
-            PACKAGES=${{ env.PACKAGES }}
+            ${{ env.PACKAGES && format('PACKAGES={0}', env.PACKAGES) || '' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
