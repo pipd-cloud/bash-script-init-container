@@ -16,9 +16,6 @@ permissions:
   attestations: write # Used to write the attestations
   security-events: write # Used to write vulnerability reports and SBOMs
 
-env:
-  PACKAGES: ${{ var.PACKAGES }}
-
 jobs:
   # Invalidate the cache if the workflow is triggered by the schedule event
   invalidate:
@@ -78,7 +75,7 @@ jobs:
         with:
           push: true
           args: |
-            ${{ env.PACKAGES && format('PACKAGES={0}', env.PACKAGES) || '' }}
+            ${{ vars.PACKAGES && format('PACKAGES={0}', vars.PACKAGES) || '' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
