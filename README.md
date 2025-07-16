@@ -53,6 +53,9 @@ initContainers:
 - SBOM and provenance attestation for each build
 - Minimal permissions and regular cache invalidation
 
+**Important Notice:** This image runs as root. It is recommended to run it with a read-only filesystem and writable volume mounts.
+
+
 ## License
 
 MIT
