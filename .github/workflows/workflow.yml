@@ -52,6 +52,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up QEMU
+        id: setup-qemu
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         id: install-buildx
         uses: docker/setup-buildx-action@v3
@@ -73,6 +77,7 @@ jobs:
         id: build-push-image
         uses: docker/build-push-action@v6
         with:
+          platforms: linux/amd64,linux/arm64
           push: true
           args: |
             ${{ vars.PACKAGES && format('PACKAGES={0}', vars.PACKAGES) || '' }}
