@@ -5,7 +5,7 @@ ARG PACKAGES="curl wget jq aws-cli"
 ENV PACKAGES=${PACKAGES}
 
 # Update the package index and install necessary packages
-RUN apk update && apk add --no-cache bash ${PACKAGES}
+RUN apk update && apk upgrade && apk add --no-cache bash ${PACKAGES}
 
 # Set the default shell
 SHELL [ "bash" ]
